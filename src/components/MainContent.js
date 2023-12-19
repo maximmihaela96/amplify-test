@@ -23,11 +23,16 @@ const MainContent = ({ signOut, user }) => {
       try {
         if (user) {
 
+          const keys = Object.keys(localStorage);
 
-          const authToken = localStorage.getItem('CognitoIdentityServiceProvider.2ho7tnfpkfe3n4rt2tmde9httc.350dd409-8921-47cc-9a28-5c8a170fd290.idToken')
+          // Find the key associated with the ID token
+          const idTokenKey = keys.find((key) => key.includes('CognitoIdentityServiceProvider.2ho7tnfpkfe3n4rt2tmde9httc.') && key.includes('.idToken'));
 
-          console.log(authToken);
-          const response = await fetch('http://localhost:8000/validate-token/', {
+          const authToken = idTokenKey ? localStorage.getItem(idTokenKey) : null
+          
+          //localStorage.getItem('CognitoIdentityServiceProvider.2ho7tnfpkfe3n4rt2tmde9httc.{}.idToken')
+
+          const response = await fetch('http://localhost:8000/ascot/filteredresponse/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -35,7 +40,17 @@ const MainContent = ({ signOut, user }) => {
               'X-CSRFToken': csrfToken,
             },
             // Include a request body if needed
-            // body: JSON.stringify({}),
+            body: JSON.stringify({
+                "filters":[
+                    {"country":"sweden"},
+                    {"region":"skåne"},
+                    {"municipality":"malmö"},
+                    {"ageGroup":""},
+                    {"gender":""},
+                    {"livingSituation":""},
+                    {"surveyFiller":""}
+                    ]
+            }),
           });
 
           if (!response.ok) {
@@ -61,7 +76,7 @@ const MainContent = ({ signOut, user }) => {
     <>
       {user ? (
         <>
-          <h1>Hello {user.signInDetails.loginId}</h1>
+          
           <button onClick={signOut}>Sign out</button>
         </>
       ) : (
